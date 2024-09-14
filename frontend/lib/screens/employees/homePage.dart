@@ -300,7 +300,7 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
             );
           },
         ),
-        title: const Text('Offices'),
+        title: const Text('Employees'),
       ),
       body: SingleChildScrollView(
         child: Column(

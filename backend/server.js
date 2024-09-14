@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/userRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
 
 const app = express();
 app.use(bodyParser.json());
@@ -12,14 +13,6 @@ const db = mysql.createConnection({
   user: 'root',       // Replace with your MySQL username
   password: '',       // Replace with your MySQL password
   database: 'ectrh'
-});
-
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection failed:', err.stack);
-    return;
-  }
-  console.log('Connected to database');
 });
 
 // Routes setup 
