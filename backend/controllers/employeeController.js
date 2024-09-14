@@ -19,25 +19,27 @@ const getAllEmployees = (req, res) => {
 
 const addEmployee = async (req, res) => {
     try {
-      console.log('Received request to add employee:', req.body);
-      const { name, email, position, phoneNumber, imagePath } = req.body;
-  
-      // Your database logic here
-      const result = await Employee.create({
-        name,
-        email,
-        position,
-        phoneNumber,
-        imagePath
-      });
-  
-      console.log('Employee added:', result);
-      res.status(200).json(result);
+        console.log('Received request to add employee:', req.body);
+        const { name, email, position, phoneNumber } = req.body;  // Don't get imagePath here
+
+        // File path (use uploaded image or fallback to default)
+        const imagePath = req.file ? req.file.path : 'uploads/default.png';
+
+        // Create new employee instance
+        const newEmployee = new Employee(null, name, email, position, imagePath, phoneNumber);
+
+        // Insert employee into the database
+        const result = await employeeDao.addEmployee(newEmployee);  // Using employeeDao to add
+
+        console.log('Employee added:', result);
+        res.status(200).json(result);
     } catch (error) {
-      console.error('Error adding employee:', error);
-      res.status(500).send('Internal Server Error');
+        console.error('Error adding employee:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  };
+};
+
+  
   
 // Controller to update an employee
 const updateEmployee = (req, res) => {

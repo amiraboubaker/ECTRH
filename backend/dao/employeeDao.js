@@ -17,6 +17,7 @@ const getAllEmployees = (callback) => {
 const addEmployee = (employee, callback) => {
     const query = 'INSERT INTO employee (name, email, position, imagePath, phoneNumber) VALUES (?, ?, ?, ?, ?)';
     const values = [employee.name, employee.email, employee.position, employee.imagePath, employee.phoneNumber];
+
     db.query(query, values, (err, results) => {
         if (err) {
             console.error('Error adding employee:', err);
@@ -26,6 +27,7 @@ const addEmployee = (employee, callback) => {
         }
     });
 };
+
 
 // Function to update an employee
 const updateEmployee = (employee, callback) => {

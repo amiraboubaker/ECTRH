@@ -79,7 +79,7 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
           items.add(
             Item(
               id: item['id'],
-              imagePath: item['imagePath'] ?? 'assets/images/default.jpg',
+              imagePath: item['imagePath'],
               name: item['name'],
               position: item['position'],
               email: item['email'],
@@ -207,9 +207,7 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, int>{
-        'id': item.id,
-      }),
+      body: jsonEncode(<String, int>{'id': item.id}),
     );
 
     if (response.statusCode == 200) {
@@ -344,36 +342,40 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: items.length,
               itemBuilder: (context, index) {
+                final item = items[index];
                 return ListTile(
                   leading: CircleAvatar(
-                    radius: items[index].width / 2,
-                    backgroundImage: NetworkImage(items[index]
-                        .imagePath), // Use NetworkImage or FileImage as needed
-                    child: items[index].imagePath.isEmpty
-                        ? const Icon(Icons.camera_alt, size: 30)
-                        : null,
+                    backgroundImage: item.imagePath.startsWith('http') ||
+                            item.imagePath.startsWith('https')
+                        ? NetworkImage(item.imagePath) // For network images
+                        : File(item.imagePath).existsSync()
+                            ? FileImage(
+                                File(item.imagePath)) // For local images
+                            : AssetImage('assets/uploads/emp1.png')
+                                as ImageProvider, // Fallback if image not found
+                    radius: 30,
                   ),
-                  title: Text(items[index].name),
-                  subtitle: Text(
-                    '${items[index].name}\nEmail: ${items[index].email}\nPosition: ${items[index].position}\nPhone Number: ${items[index].phoneNumber}',
-                    style: TextStyle(fontSize: 14.0),
+                  title: Text(item.name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.position),
+                      Text(item.email),
+                      Text(item.phoneNumber),
+                    ],
                   ),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'Edit') {
-                        _editItem(items[index]);
-                      } else if (value == 'Delete') {
-                        _deleteItem(items[index]);
-                      }
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return {'Edit', 'Delete'}.map((String choice) {
-                        return PopupMenuItem<String>(
-                          value: choice,
-                          child: Text(choice),
-                        );
-                      }).toList();
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _editItem(item),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteItem(item),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -384,7 +386,7 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
+            icon: Icon(Icons.business),
             label: 'Employees',
           ),
           BottomNavigationBarItem(
@@ -392,13 +394,12 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
             label: 'Teams',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.apartment),
+            icon: Icon(Icons.location_city),
             label: 'Offices',
           ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
     );
@@ -406,6 +407,14 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
 }
 
 class EmployeeForm extends StatefulWidget {
+  final String? initialName;
+  final String? initialEmail;
+  final String? initialPosition;
+  final String? initialPhoneNumber;
+  final String? initialImagePath;
+  final void Function(String name, String email, String position,
+      String phoneNumber, String imagePath) onSave;
+
   const EmployeeForm({
     Key? key,
     this.initialName,
@@ -415,19 +424,6 @@ class EmployeeForm extends StatefulWidget {
     this.initialImagePath,
     required this.onSave,
   }) : super(key: key);
-
-  final String? initialName;
-  final String? initialEmail;
-  final String? initialPosition;
-  final String? initialPhoneNumber;
-  final String? initialImagePath;
-  final void Function(
-    String name,
-    String email,
-    String position,
-    String phoneNumber,
-    String imagePath,
-  ) onSave;
 
   @override
   State<EmployeeForm> createState() => _EmployeeFormState();
@@ -439,7 +435,7 @@ class _EmployeeFormState extends State<EmployeeForm> {
   late String _email;
   late String _position;
   late String _phoneNumber;
-  String _imagePath = 'assets/images/default.jpg';
+  late String _imagePath;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -450,22 +446,23 @@ class _EmployeeFormState extends State<EmployeeForm> {
     _email = widget.initialEmail ?? '';
     _position = widget.initialPosition ?? '';
     _phoneNumber = widget.initialPhoneNumber ?? '';
-    _imagePath = widget.initialImagePath ?? 'assets/images/default.jpg';
+    _imagePath = widget.initialImagePath ?? 'assets/uploads/emp1.png';
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
       setState(() {
-        _imagePath = pickedFile.path;
+        _imagePath = image.path;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Form(
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -474,91 +471,90 @@ class _EmployeeFormState extends State<EmployeeForm> {
               child: CircleAvatar(
                 radius: 50,
                 backgroundImage:
-                    _imagePath.isEmpty ? null : FileImage(File(_imagePath)),
+                    _imagePath.isNotEmpty ? FileImage(File(_imagePath)) : null,
                 child: _imagePath.isEmpty
-                    ? const Icon(Icons.camera_alt, size: 50)
+                    ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
                     : null,
               ),
             ),
-            SizedBox(height: 16),
-            Form(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  children: [
-                    TextFormField(
-                      initialValue: _name,
-                      decoration: const InputDecoration(labelText: 'Name'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a name';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        _name = value ?? '';
-                      },
-                    ),
-                    TextFormField(
-                      initialValue: _email,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter an email';
-                        } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                            .hasMatch(value)) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        _email = value ?? '';
-                      },
-                    ),
-                    TextFormField(
-                      initialValue: _position,
-                      decoration: const InputDecoration(labelText: 'Position'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a position';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        _position = value ?? '';
-                      },
-                    ),
-                    TextFormField(
-                      initialValue: _phoneNumber,
-                      decoration:
-                          const InputDecoration(labelText: 'Phone Number'),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a phone number';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        _phoneNumber = value ?? '';
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          _formKey.currentState?.save();
-                          widget.onSave(_name, _email, _position, _phoneNumber,
-                              _imagePath);
-                        }
-                      },
-                      child: const Text('Save'),
-                    ),
-                  ],
-                ),
+            SizedBox(height: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextFormField(
+                initialValue: _name,
+                decoration: const InputDecoration(labelText: 'Employee Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _name = value ?? '';
+                },
               ),
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextFormField(
+                initialValue: _email,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the Email';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _email = value ?? '';
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextFormField(
+                initialValue: _position,
+                decoration: const InputDecoration(labelText: 'Work Position'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the Work Position';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _position = value ?? '';
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextFormField(
+                initialValue: _phoneNumber,
+                decoration: const InputDecoration(labelText: 'Phone Number'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the Phone Number';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _phoneNumber = value ?? '';
+                },
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    _formKey.currentState?.save();
+                    widget.onSave(
+                        _name, _email, _position, _phoneNumber, _imagePath);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ),
           ],
         ),
       ),

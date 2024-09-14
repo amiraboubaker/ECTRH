@@ -342,7 +342,7 @@ class _OfficeHomePageState extends State<OfficesHomePage> {
                       ),
                     ),
                   ),
-                  title: Text(items[index].name),
+                  // title: Text(items[index].name),
                   subtitle: Text(
                     '${items[index].name}\'${items[index].location}\nManager: ${items[index].manager}\nFix Number: ${items[index].fixNumber}',
                     style: TextStyle(fontSize: 14.0),
