@@ -69,8 +69,8 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
 
   // Fetch all employees
   void _fetchEmployees() async {
-    final response =
-        await http.get(Uri.parse('http://10.0.2.2:3000/api/getAllEmployees'));
+    final response = await http
+        .get(Uri.parse('http://192.168.1.14:3000/api/getAllEmployees'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
       setState(() {
@@ -101,44 +101,55 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
   // Add a new employee
   Future<void> _addEmployee(String name, String email, String position,
       String phoneNumber, String imagePath) async {
-    final response = await http.post(
-      Uri.parse('http://10.0.2.2:3000/api/addEmployee'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'name': name,
-        'email': email,
-        'position': position,
-        'phoneNumber': phoneNumber,
-        'imagePath': imagePath,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      final newEmployee = jsonDecode(response.body);
-      setState(() {
-        items.add(
-          Item(
-            id: newEmployee['id'],
-            imagePath: newEmployee['imagePath'],
-            name: newEmployee['name'],
-            email: newEmployee['email'],
-            position: newEmployee['position'],
-            phoneNumber: newEmployee['phoneNumber'],
-            width: 60,
-            height: 60,
-          ),
-        );
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Added successfully')),
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.1.14:3000/api/addEmployee'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'name': name,
+          'email': email,
+          'position': position,
+          'phoneNumber': phoneNumber,
+          'imagePath': imagePath,
+        }),
       );
-      Navigator.of(context).pop();
-    } else {
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final newEmployee = jsonDecode(response.body);
+        setState(() {
+          items.add(
+            Item(
+              id: newEmployee['id'],
+              imagePath: newEmployee['imagePath'],
+              name: newEmployee['name'],
+              email: newEmployee['email'],
+              position: newEmployee['position'],
+              phoneNumber: newEmployee['phoneNumber'],
+              width: 60,
+              height: 60,
+            ),
+          );
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Added successfully')),
+        );
+        Navigator.of(context).pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to add employee: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('Error occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to add employee: ${response.statusCode}')),
+        const SnackBar(
+            content: Text('An error occurred while adding employee')),
       );
     }
   }
@@ -147,7 +158,7 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
   Future<void> _updateEmployee(int id, String name, String email,
       String position, String phoneNumber, String imagePath) async {
     final response = await http.put(
-      Uri.parse('http://10.0.2.2:3000/api/updateEmployee'),
+      Uri.parse('http://192.168.1.14:3000/api/updateEmployee'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -192,7 +203,7 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
   // Delete an employee
   void _deleteItem(Item item) async {
     final response = await http.delete(
-      Uri.parse('http://10.0.2.2:3000/api/deleteEmployee'),
+      Uri.parse('http://192.168.1.14:3000/api/deleteEmployee'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

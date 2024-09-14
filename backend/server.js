@@ -22,8 +22,9 @@ db.connect((err) => {
   console.log('Connected to database');
 });
 
-// Routes setup
+// Routes setup 
 app.use('/api/user', userRoutes);
+app.use('/api', employeeRoutes);
 
 // Set PORT and start server
 const PORT = process.env.PORT || 3000;

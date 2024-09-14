@@ -16,20 +16,29 @@ const getAllEmployees = (req, res) => {
 };
 
 // Controller to add a new employee
-const addEmployee = (req, res) => {
-    const { name, email, position, phoneNumber, imagePath } = req.body;
-    const newEmployee = new Employee(null, name, email, position, imagePath, phoneNumber);
 
-    employeeDao.addEmployee(newEmployee, (err, result) => {
-        if (err) {
-            console.error('Error adding employee:', err);
-            res.status(500).json({ error: 'Error adding employee' });
-        } else {
-            res.status(200).json({ message: 'Employee added successfully', id: result.insertId });
-        }
-    });
-};
-
+const addEmployee = async (req, res) => {
+    try {
+      console.log('Received request to add employee:', req.body);
+      const { name, email, position, phoneNumber, imagePath } = req.body;
+  
+      // Your database logic here
+      const result = await Employee.create({
+        name,
+        email,
+        position,
+        phoneNumber,
+        imagePath
+      });
+  
+      console.log('Employee added:', result);
+      res.status(200).json(result);
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  };
+  
 // Controller to update an employee
 const updateEmployee = (req, res) => {
     const { id, name, email, position, phoneNumber, imagePath } = req.body;
