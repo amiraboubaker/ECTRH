@@ -1,58 +1,73 @@
-const OfficeDao = require('./officeDao');
+const OfficeDao = require('../dao/officeDao');
+const Office = require('../models/office');
 
-class OfficeController {
-  static async fetchOffices(req, res) {
+// Controller to get all offices
+const fetchOffices = (req, res) => {
+    OfficeDao.fetchOffices((err, offices) => {
+        if (err) {
+            console.error('Error fetching offices:', err);
+            res.status(500).json({ error: 'Error fetching offices' });
+        } else {
+            res.status(200).json(offices);
+        }
+    });
+};
+
+// Controller to add a new office
+const addOffice = async (req, res) => {
     try {
-      const offices = await OfficeDao.getAllOffices();
-      res.json(offices);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+        console.log('Received request to add office:', req.body);
+        const { name, manager, location, fixNumber } = req.body;
 
-  static async fetchOfficeById(req, res) {
-    try {
-      const { id } = req.params;
-      const office = await OfficeDao.getOfficeById(id);
-      if (office) {
-        res.json(office);
-      } else {
-        res.status(404).json({ error: 'Office not found' });
-      }
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+        // File path (use uploaded image or fallback to default)
+        const imagePath = req.file ? req.file.path : 'uploads/office1.png';
 
-  static async addOffice(req, res) {
-    try {
-      const office = req.body;
-      const newOffice = await OfficeDao.addOffice(office);
-      res.status(201).json(newOffice);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+        // Create new office instance
+        const newOffice = new Office(null, name, manager, location, imagePath, fixNumber);
 
-  static async updateOffice(req, res) {
-    try {
-      const office = req.body;
-      const updatedOffice = await OfficeDao.updateOffice(office);
-      res.json(updatedOffice);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+        // Insert office into the database
+        const result = await OfficeDao.addOffice(newOffice);
 
-  static async deleteOffice(req, res) {
-    try {
-      const { id } = req.body;
-      await OfficeDao.deleteOffice(id);
-      res.status(204).end();
+        console.log('Office added:', result);
+        res.status(201).json(result); // Use 201 status for creation
     } catch (error) {
-      res.status(500).json({ error: error.message });
+        console.error('Error adding office:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  }
-}
+};
 
-module.exports = OfficeController;
+// Controller to update an office
+const updateOffice = (req, res) => {
+    const { id, name, manager, location, imagePath, fixNumber } = req.body;
+    const updatedOffice = new Office(id, name, manager, location, imagePath, fixNumber);
+
+    OfficeDao.updateOffice(updatedOffice, (err, result) => {
+        if (err) {
+            console.error('Error updating office:', err);
+            res.status(500).json({ error: 'Error updating office' });
+        } else {
+            res.status(200).json({ message: 'Office updated successfully' });
+        }
+    });
+};
+
+// Controller to delete an office
+const deleteOffice = (req, res) => {
+    const { id } = req.body;
+
+    OfficeDao.deleteOffice(id, (err, result) => {
+        if (err) {
+            console.error('Error deleting office:', err);
+            res.status(500).json({ error: 'Error deleting office' });
+        } else {
+            res.status(200).json({ message: 'Office deleted successfully' });
+        }
+    });
+};
+
+module.exports = {
+    fetchOffices,
+    addOffice,
+    updateOffice,
+    deleteOffice
+};

@@ -5,6 +5,7 @@ const path = require('path');
 const userRoutes = require('./routes/userRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const officeRoutes = require('./routes/officeRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 const app = express();
 app.use(bodyParser.json());
@@ -80,20 +81,20 @@ app.post('/api/addEmployee', upload.single('image'), (req, res) => {
 // Route to upload an office image and save office info
 app.post('/api/addOffice', upload.single('image'), (req, res) => {
   const { name, location, headMaster, fixNumber } = req.body;
-  const imagePath = req.file ? req.file.path : 'uploads/default.png';
+  const imagePath = req.file ? req.file.path : 'uploads/';
 
-  const sql = 'INSERT INTO office (name, location, headMaster, fixNumber, imagePath) VALUES (?, ?, ?, ?, ?)';
-  db.query(sql, [name, location, headMaster, fixNumber, imagePath], (err, result) => {
+  const sql = 'INSERT INTO office (name, manager, location, imagePath, fixNumber) VALUES (?, ?, ?, ?, ?)';
+  db.query(sql, [name, manager, location, imagePath, fixNumber], (err, result) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     res.status(200).json({
       id: result.insertId,
       name,
+      manager,
       location,
-      headMaster,
-      fixNumber,
-      imagePath
+      imagePath,
+      fixNumber
     });
   });
 });
@@ -102,7 +103,7 @@ app.post('/api/addOffice', upload.single('image'), (req, res) => {
 app.use('/api/user', userRoutes);
 app.use('/api', employeeRoutes);
 app.use('/api', officeRoutes);
-
+app.use('/api', teamRoutes);
 // Set PORT and start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {

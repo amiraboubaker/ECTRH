@@ -64,7 +64,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
 
   Future<void> _fetchTeam() async {
     final response =
-        await http.get(Uri.parse('http://localhost:3000/api/getAllTeams'));
+        await http.get(Uri.parse('http://192.168.1.14:3000/api/getAllTeams'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
       setState(() {
@@ -73,8 +73,8 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
           items.add(
             Item(
               id: item['id'],
-              imagePath: item['imagePath'] ?? 'assets/images/default.jpg',
               name: item['name'],
+              imagePath: item['imagePath'] ?? 'uploads/',
               head: item['head'],
               width: 60,
               height: 60,
@@ -86,7 +86,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Failed to fetch employees: ${response.statusCode}')),
+            content: Text('Failed to fetch teams: ${response.statusCode}')),
       );
     }
   }
@@ -96,7 +96,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Edit Office Info'),
+          title: const Text('Edit Team Info'),
           content: TeamForm(
             initialName: item.name,
             initialImagePath: item.imagePath,
@@ -123,7 +123,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
 
   void _deleteItem(Item item) async {
     final response = await http.delete(
-      Uri.parse('http://localhost:3000/api/deleteTeam'),
+      Uri.parse('http://192.168.1.14:3000/api/deleteTeam'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -194,8 +194,8 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
         items.add(
           Item(
             id: newTeam['id'],
-            imagePath: newTeam['imagePath'],
             name: newTeam['name'],
+            imagePath: newTeam['imagePath'],
             head: newTeam['head'],
             width: 60,
             height: 60,
@@ -217,7 +217,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
   Future<void> _updateTeam(
       int id, String name, String imagePath, String head) async {
     final response = await http.put(
-      Uri.parse('http://localhost:3000/api/updateTeam'),
+      Uri.parse('http://192.168.1.14:3000/api/updateTeam'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -373,8 +373,6 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
     );
   }
 }
-
-class _fetchTeams {}
 
 class TeamForm extends StatefulWidget {
   const TeamForm({

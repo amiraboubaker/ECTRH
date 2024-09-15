@@ -70,7 +70,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
   // Fetch all offices
   void _fetchOffices() async {
     final response =
-        await http.get(Uri.parse('http://192.168.1.14:3000/api/fetchOffice'));
+        await http.get(Uri.parse('http://192.168.1.14:3000/api/fetchOffices'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
       setState(() {

@@ -14,34 +14,24 @@ const fetchOffices = (callback) => {
 };
 
 // Function to add a new office
-// Add Office
-router.post('/api/addOffice', async (req, res) => {
-    const { name, manager, location, fixNumber, imagePath } = req.body;
-    try {
-      const result = await pool.query(
-        'INSERT INTO offices (name, manager, location, fixNumber, imagePath) VALUES (?, ?, ?, ?, ?)',
-        [name, manager, location, fixNumber, imagePath]
-      );
-      res.status(200).json({
-        id: result.insertId,
-        name,
-        manager,
-        location,
-        fixNumber,
-        imagePath
-      });
-    } catch (error) {
-      console.error('Error adding office:', error);
-      res.status(500).send('Server error');
-    }
-  });
-  
+const addOffice = (office, callback) => {
+    const query = 'INSERT INTO office (name, manager, location, imagePath, fixNumber) VALUES (?, ?, ?, ?, ?)';
+    const values = [office.name, office.manager, office.location, office.imagePath, office.fixNumber];
 
+    db.query(query, values, (err, results) => {
+        if (err) {
+            console.error('Error adding office:', err);
+            callback(err, null);
+        } else {
+            callback(null, results);
+        }
+    });
+};
 
 // Function to update an office
 const updateOffice = (office, callback) => {
-    const query = 'UPDATE office SET name = ?, , manager = ?, location = ?, imagePath = ?, fixNumber = ? WHERE id = ?';
-    const values = [office.name,  office.manager, office.location, office.imagePath, office.fixNumber, office.id];
+    const query = 'UPDATE office SET name = ?, manager = ?, location = ?, imagePath = ?, fixNumber = ? WHERE id = ?';
+    const values = [office.name, office.manager, office.location, office.imagePath, office.fixNumber, office.id];
 
     db.query(query, values, (err, results) => {
         if (err) {

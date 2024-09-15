@@ -1,5 +1,3 @@
-// controllers/employeeController.js
-
 const Employee = require('../models/employee');
 const employeeDao = require('../dao/employeeDao');
 
