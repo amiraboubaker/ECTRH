@@ -107,6 +107,7 @@ app.use('/api/user', userRoutes);
 app.use('/api', employeeRoutes);
 app.use('/api', officeRoutes);
 app.use('/api', teamRoutes);
+
 // Set PORT and start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {

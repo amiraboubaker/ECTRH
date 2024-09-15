@@ -74,7 +74,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
             Item(
               id: item['id'],
               name: item['name'],
-              imagePath: item['imagePath'] ?? 'uploads/',
+              imagePath: item['imagePath'] ?? 'uploads/1.png',
               head: item['head'],
               width: 60,
               height: 60,
@@ -83,7 +83,6 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
         }
       });
     } else {
-      // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Failed to fetch teams: ${response.statusCode}')),
@@ -140,7 +139,6 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
         const SnackBar(content: Text('Deleted successfully')),
       );
     } else {
-      // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Failed to delete Team: ${response.statusCode}')),
@@ -177,7 +175,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
 
   Future<void> _addTeam(String name, String imagePath, String head) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.14:3000/api/addteam'),
+      Uri.parse('http://192.168.1.14:3000/api/addTeam'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -207,7 +205,6 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       );
       Navigator.of(context).pop();
     } else {
-      print('Error: ${response.body}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to add team: ${response.statusCode}')),
       );
@@ -248,7 +245,10 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       );
       Navigator.of(context).pop();
     } else {
-      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Failed to update team: ${response.statusCode}')),
+      );
     }
   }
 
@@ -323,26 +323,23 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
                     ),
                   ),
                   title: Text(items[index].name),
-                  subtitle: Text(
-                    '${items[index].name}\'${items[index].imagePath}\n',
-                    style: TextStyle(fontSize: 14.0),
-                  ),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'Edit') {
-                        _editItem(items[index]);
-                      } else if (value == 'Delete') {
-                        _deleteItem(items[index]);
-                      }
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return {'Edit', 'Delete'}.map((String choice) {
-                        return PopupMenuItem<String>(
-                          value: choice,
-                          child: Text(choice),
-                        );
-                      }).toList();
-                    },
+                  subtitle: Text(items[index].head),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          _editItem(items[index]);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          _deleteItem(items[index]);
+                        },
+                      ),
+                    ],
                   ),
                 );
               },
@@ -353,7 +350,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
+            icon: Icon(Icons.home),
             label: 'Employees',
           ),
           BottomNavigationBarItem(
@@ -361,13 +358,11 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
             label: 'Teams',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.apartment),
+            icon: Icon(Icons.business),
             label: 'Offices',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
     );
@@ -376,117 +371,107 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
 
 class TeamForm extends StatefulWidget {
   const TeamForm({
-    Key? key,
+    super.key,
     this.initialName,
     this.initialImagePath,
     this.initialHead,
-    required Null Function(dynamic name, dynamic imagePath, dynamic head)
-        onSave,
-  }) : super(key: key);
+    required this.onSave,
+  });
 
   final String? initialName;
   final String? initialImagePath;
   final String? initialHead;
+  final void Function(String name, String imagePath, String head) onSave;
 
   @override
-  _TeamFormState createState() => _TeamFormState();
-
-  void onSave(String name, String imagePath, String head) {}
+  State<TeamForm> createState() => _TeamFormState();
 }
 
 class _TeamFormState extends State<TeamForm> {
   final _formKey = GlobalKey<FormState>();
-  late String _imagePath;
-  late String _head;
-  late String _name;
+  final _nameController = TextEditingController();
+  final _headController = TextEditingController();
+  final _imagePathController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  File? _imageFile;
 
   @override
   void initState() {
     super.initState();
-    _name = widget.initialName ?? '';
-    _imagePath = widget.initialImagePath ?? '';
-    _head = widget.initialHead ?? '';
+    _nameController.text = widget.initialName ?? '';
+    _headController.text = widget.initialHead ?? '';
+    _imagePathController.text = widget.initialImagePath ?? '';
   }
 
   Future<void> _pickImage() async {
-    // Use file picker to select an image
-    // Update _imagePath with the selected image path
-    // Uncomment and use a package like image_picker for actual implementation
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _imagePath = pickedFile.path;
+        _imageFile = File(pickedFile.path);
+        _imagePathController.text = pickedFile.path;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage:
-                    _imagePath.isEmpty ? null : FileImage(File(_imagePath)),
-                child: _imagePath.isEmpty
-                    ? const Icon(Icons.camera_alt, size: 50)
-                    : null,
-              ),
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: _pickImage,
+            child: CircleAvatar(
+              radius: 50,
+              backgroundImage: _imageFile == null
+                  ? (widget.initialImagePath != null
+                      ? NetworkImage(widget.initialImagePath!)
+                      : null)
+                  : FileImage(_imageFile!),
+              child: _imageFile == null
+                  ? const Icon(Icons.camera_alt, size: 40)
+                  : null,
             ),
-            SizedBox(height: 16.0),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TextFormField(
-                initialValue: _name,
-                decoration: const InputDecoration(labelText: 'Team Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _name = value ?? '';
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TextFormField(
-                initialValue: _head,
-                decoration: const InputDecoration(labelText: 'Team Head'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a head Team';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _head = value ?? '';
-                },
-              ),
-            ),
-            SizedBox(height: 16.0),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    _formKey.currentState?.save();
-                    widget.onSave(_name, _imagePath, _head);
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ),
-          ],
-        ),
+          ),
+          TextFormField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: 'Name'),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a name';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _headController,
+            decoration: const InputDecoration(labelText: 'Head'),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter head info';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _imagePathController,
+            decoration: const InputDecoration(labelText: 'Image Path'),
+            enabled: false,
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                widget.onSave(
+                  _nameController.text,
+                  _imagePathController.text,
+                  _headController.text,
+                );
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }

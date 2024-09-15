@@ -1,7 +1,8 @@
 const Team = require('../models/team');
 const teamDao = require('../dao/teamDao');
 
-// Controller to get all employees
+// Controller to get all Teams
+
 const getAllTeams = (req, res) => {
     teamDao.getAllTeams((err, teams) => {
         if (err) {
@@ -13,33 +14,33 @@ const getAllTeams = (req, res) => {
     });
 };
 
-// Controller to add a new employee
+// Controller to add a new team
 
-const addTeam = async (req, res) => {
-    try {
-        console.log('Received request to add team:', req.body);
-        const { name, head } = req.body;  // Don't get imagePath here
+const addTeam = (req, res) => {
+    const team = {
+        name: req.body.name,
+        imagePath: req.body.imagePath,
+        head: req.body.head
+    };
 
-        // File path (use uploaded image or fallback to default)
-        const imagePath = req.file ? req.file.path : 'uploads/';
-
-        // Create new employee instance
-        const newTeam = new Team (null, name, imagePath, head);
-
-        // Insert employee into the database
-        const result = await teamDao.addTeam(newTeam);  // Using employeeDao to add
-
-        console.log('Team added:', result);
-        res.status(200).json(result);
-    } catch (error) {
-        console.error('Error adding team:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+    teamDao.addTeam(team, (error, teamId) => {
+        if (error) {
+            return res.status(500).json({ message: 'Error adding team', error });
+        }
+        res.status(200).json({
+            message: 'Team added successfully',
+            id: teamId,
+            name: team.name,
+            imagePath: team.imagePath,
+            head: team.head
+        });
+    });
 };
 
   
   
 // Controller to update an team
+
 const updateTeam = (req, res) => {
     const { id, name, imagePath, head } = req.body;
     const updatedteam = new Team(id, name, imagePath, head);
@@ -54,7 +55,7 @@ const updateTeam = (req, res) => {
     });
 };
 
-// Controller to delete an employee
+// Controller to delete a team
 const deleteTeam = (req, res) => {
     const { id } = req.body;
 
