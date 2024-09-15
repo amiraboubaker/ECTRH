@@ -1,9 +1,9 @@
-const OfficeDao = require('../dao/officeDao');
+const officeDao = require('../dao/officeDao');
 const Office = require('../models/office');
 
 // Controller to get all offices
 const fetchOffices = (req, res) => {
-    OfficeDao.fetchOffices((err, offices) => {
+    officeDao.fetchOffices((err, offices) => {
         if (err) {
             console.error('Error fetching offices:', err);
             res.status(500).json({ error: 'Error fetching offices' });
@@ -26,7 +26,7 @@ const addOffice = async (req, res) => {
         const newOffice = new Office(null, name, manager, location, imagePath, fixNumber);
 
         // Insert office into the database
-        const result = await OfficeDao.addOffice(newOffice);
+        const result = await officeDao.addOffice(newOffice);
 
         console.log('Office added:', result);
         res.status(201).json(result); // Use 201 status for creation
@@ -41,7 +41,7 @@ const updateOffice = (req, res) => {
     const { id, name, manager, location, imagePath, fixNumber } = req.body;
     const updatedOffice = new Office(id, name, manager, location, imagePath, fixNumber);
 
-    OfficeDao.updateOffice(updatedOffice, (err, result) => {
+    officeDao.updateOffice(updatedOffice, (err, result) => {
         if (err) {
             console.error('Error updating office:', err);
             res.status(500).json({ error: 'Error updating office' });
@@ -55,7 +55,7 @@ const updateOffice = (req, res) => {
 const deleteOffice = (req, res) => {
     const { id } = req.body;
 
-    OfficeDao.deleteOffice(id, (err, result) => {
+    officeDao.deleteOffice(id, (err, result) => {
         if (err) {
             console.error('Error deleting office:', err);
             res.status(500).json({ error: 'Error deleting office' });

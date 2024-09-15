@@ -40,9 +40,9 @@ const addTeam = async (req, res) => {
   
   
 // Controller to update an team
-const updateEmployee = (req, res) => {
+const updateTeam = (req, res) => {
     const { id, name, imagePath, head } = req.body;
-    const updatedteam = new Team(id, name, email, position, imagePath, phoneNumber);
+    const updatedteam = new Team(id, name, imagePath, phoneNumber);
 
     teamDao.updateTeam(updatedteam, (err, result) => {
         if (err) {

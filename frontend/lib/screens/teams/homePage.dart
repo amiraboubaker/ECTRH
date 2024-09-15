@@ -62,7 +62,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
     );
   }
 
-  Future<void> _fetchTeam() async {
+  Future<void> _fetchTeams() async {
     final response =
         await http.get(Uri.parse('http://192.168.1.14:3000/api/getAllTeams'));
     if (response.statusCode == 200) {
@@ -177,7 +177,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
 
   Future<void> _addTeam(String name, String imagePath, String head) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:3000/api/addteam'),
+      Uri.parse('http://192.168.1.14:3000/api/addteam'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
