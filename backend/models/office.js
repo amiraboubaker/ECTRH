@@ -1,5 +1,5 @@
 class Office {
-    constructor(id, name, manager,location, imagePath) {
+    constructor(id, name, manager, location, imagePath, fixNumber) {
         this.id = id;
         this.name = name;
         this.manager = manager;

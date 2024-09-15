@@ -70,7 +70,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
   // Fetch all offices
   void _fetchOffices() async {
     final response =
-        await http.get(Uri.parse('http://192.168.1.14:3000/api/fetchOffices'));
+        await http.get(Uri.parse('http://192.168.1.14:3000/api/getAllOffices'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
       setState(() {
@@ -100,7 +100,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
 
   // Add a new office
   Future<void> _addOffice(String name, String manager, String location,
-      String fixNumber, String imagePath) async {
+      String imagePath, String fixNumber) async {
     try {
       final response = await http.post(
         Uri.parse('http://192.168.1.14:3000/api/addOffice'),
@@ -120,16 +120,16 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final newEmployee = jsonDecode(response.body);
+        final newOffice = jsonDecode(response.body);
         setState(() {
           items.add(
             Item(
-              id: newEmployee['id'],
-              name: newEmployee['name'],
-              manager: newEmployee['manager'],
-              location: newEmployee['location'],
-              imagePath: newEmployee['imagePath'],
-              fixNumber: newEmployee['fixNumber'],
+              id: newOffice['id'],
+              name: newOffice['name'],
+              manager: newOffice['manager'],
+              location: newOffice['location'],
+              imagePath: newOffice['imagePath'],
+              fixNumber: newOffice['fixNumber'],
               width: 60,
               height: 60,
             ),
@@ -166,8 +166,8 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
         'name': name,
         'manager': manager,
         'location': location,
-        'fixNumber': fixNumber,
         'imagePath': imagePath,
+        'fixNumber': fixNumber,
       }),
     );
 
@@ -318,7 +318,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Image.asset(
-                "assets/images/office1.jpg",
+                "assets/uploads/office1.png",
               ),
             ),
             Padding(
@@ -350,7 +350,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
                         : File(item.imagePath).existsSync()
                             ? FileImage(
                                 File(item.imagePath)) // For local images
-                            : AssetImage('assets/images/office1.jpg')
+                            : AssetImage('assets/uploads/office1.png')
                                 as ImageProvider, // Fallback if image not found
                     radius: 30,
                   ),
@@ -445,7 +445,7 @@ class _OfficeFormState extends State<OfficeForm> {
     _manager = widget.initialManager ?? '';
     _location = widget.initialLocation ?? '';
     _fixNumber = widget.initialFixNumber ?? '';
-    _imagePath = widget.initialImagePath ?? 'assets/uploads/';
+    _imagePath = widget.initialImagePath ?? 'assets/uploads/office1.png';
   }
 
   Future<void> _pickImage() async {

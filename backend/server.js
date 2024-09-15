@@ -80,8 +80,10 @@ app.post('/api/addEmployee', upload.single('image'), (req, res) => {
 
 // Route to upload an office image and save office info
 app.post('/api/addOffice', upload.single('image'), (req, res) => {
-  const { name, location, headMaster, fixNumber } = req.body;
-  const imagePath = req.file ? req.file.path : 'uploads/';
+  const { name, manager, location, fixNumber } = req.body; // Destructure without imagePath
+  
+  // File path (or default if no file is uploaded)
+  const imagePath = req.file ? req.file.path : 'uploads/default.png';
 
   const sql = 'INSERT INTO office (name, manager, location, imagePath, fixNumber) VALUES (?, ?, ?, ?, ?)';
   db.query(sql, [name, manager, location, imagePath, fixNumber], (err, result) => {
@@ -98,6 +100,7 @@ app.post('/api/addOffice', upload.single('image'), (req, res) => {
     });
   });
 });
+
 
 // Routes setup
 app.use('/api/user', userRoutes);
