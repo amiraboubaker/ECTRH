@@ -318,7 +318,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Image.asset(
-                "assets/uploads/office1.png",
+                "assets/images/office.png",
               ),
             ),
             Padding(
@@ -358,8 +358,8 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.location),
                       Text(item.manager),
+                      Text(item.location),
                       Text(item.fixNumber),
                     ],
                   ),
@@ -445,7 +445,7 @@ class _OfficeFormState extends State<OfficeForm> {
     _manager = widget.initialManager ?? '';
     _location = widget.initialLocation ?? '';
     _fixNumber = widget.initialFixNumber ?? '';
-    _imagePath = widget.initialImagePath ?? 'assets/uploads/office1.png';
+    _imagePath = widget.initialImagePath ?? 'assets/uploads/default.png';
   }
 
   Future<void> _pickImage() async {

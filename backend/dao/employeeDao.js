@@ -28,7 +28,6 @@ const addEmployee = (employee, callback) => {
     });
 };
 
-
 // Function to update an employee
 const updateEmployee = (employee, callback) => {
     const query = 'UPDATE employee SET name = ?, email = ?, position = ?, imagePath = ?, phoneNumber = ? WHERE id = ?';

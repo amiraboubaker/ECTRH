@@ -446,7 +446,7 @@ class _EmployeeFormState extends State<EmployeeForm> {
     _email = widget.initialEmail ?? '';
     _position = widget.initialPosition ?? '';
     _phoneNumber = widget.initialPhoneNumber ?? '';
-    _imagePath = widget.initialImagePath ?? 'assets/uploads/emp1.png';
+    _imagePath = widget.initialImagePath ?? 'assets/uploads/default.png';
   }
 
   Future<void> _pickImage() async {
@@ -470,11 +470,16 @@ class _EmployeeFormState extends State<EmployeeForm> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage:
-                    _imagePath.isNotEmpty ? FileImage(File(_imagePath)) : null,
-                child: _imagePath.isEmpty
+                backgroundImage: _imagePath.isNotEmpty
+                    ? FileImage(File(_imagePath)) // Display picked image
+                    : null,
+                child: _imagePath
+                        .isEmpty // Show camera icon if no image is picked
                     ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
                     : null,
+                backgroundColor: _imagePath.isEmpty
+                    ? Colors.grey[300]
+                    : null, // Optional: background color for indication
               ),
             ),
             SizedBox(height: 16.0),
@@ -500,8 +505,11 @@ class _EmployeeFormState extends State<EmployeeForm> {
                 initialValue: _email,
                 decoration: const InputDecoration(labelText: 'Email'),
                 validator: (value) {
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
                   if (value == null || value.isEmpty) {
                     return 'Please enter the Email';
+                  } else if (!emailRegex.hasMatch(value)) {
+                    return 'Please enter a valid email address';
                   }
                   return null;
                 },
@@ -531,9 +539,15 @@ class _EmployeeFormState extends State<EmployeeForm> {
               child: TextFormField(
                 initialValue: _phoneNumber,
                 decoration: const InputDecoration(labelText: 'Phone Number'),
+                keyboardType: TextInputType.number,
+                maxLength: 8,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the Phone Number';
+                  } else if (value.length > 8) {
+                    return 'Phone number cannot exceed 8 digits';
+                  } else if (!RegExp(r'^\d+$').hasMatch(value)) {
+                    return 'Phone number must be numeric';
                   }
                   return null;
                 },

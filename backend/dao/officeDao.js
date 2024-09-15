@@ -1,7 +1,7 @@
 const db = require('../config/dbconfig');
 
 // Function to get all offices
-const fetchOffices = (callback) => {
+const getAllOffices = (callback) => {
     const query = 'SELECT * FROM office';
     db.query(query, (err, results) => {
         if (err) {
@@ -57,7 +57,7 @@ const deleteOffice = (id, callback) => {
 };
 
 module.exports = {
-    fetchOffices,
+    getAllOffices,
     addOffice,
     updateOffice,
     deleteOffice

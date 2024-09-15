@@ -37,8 +37,6 @@ const addEmployee = async (req, res) => {
     }
 };
 
-  
-  
 // Controller to update an employee
 const updateEmployee = (req, res) => {
     const { id, name, email, position, phoneNumber, imagePath } = req.body;
