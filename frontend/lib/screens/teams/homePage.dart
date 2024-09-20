@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
-import '../employees/homePage.dart';
 import '../home_screen.dart';
-import '../offices/homePage.dart';
+import '../offices/homePage.dart' as Offices;
+import '../teams/homePage.dart' as Teams;
 
 class Item {
   Item({
@@ -19,12 +19,12 @@ class Item {
     this.height = 90.0,
   });
 
-  final double height;
   final int id;
   final String imagePath;
   final String name;
   final String head;
   final double width;
+  final double height;
 }
 
 class TeamsHomePage extends StatefulWidget {
@@ -35,15 +35,15 @@ class TeamsHomePage extends StatefulWidget {
 }
 
 class _TeamsHomePageState extends State<TeamsHomePage> {
-  List<Item> items = [];
+  final List<Item> items = [];
 
   static const List<Widget> _widgetOptions = <Widget>[
-    EmployeesHomePage(),
     TeamsHomePage(),
-    OfficesHomePage(),
+    Teams.TeamsHomePage(),
+    Offices.OfficesHomePage(),
   ];
 
-  int _selectedIndex = 1;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -56,13 +56,15 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       _selectedIndex = index;
     });
 
-    Navigator.push(
+    // Navigate to the selected page
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => _widgetOptions[index]),
     );
   }
 
-  Future<void> _fetchTeams() async {
+  // Fetch all Teams
+  void _fetchTeams() async {
     final response =
         await http.get(Uri.parse('http://192.168.1.14:3000/api/getAllTeams'));
     if (response.statusCode == 200) {
@@ -73,9 +75,9 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
           items.add(
             Item(
               id: item['id'],
+              imagePath: item['imagePath'],
               name: item['name'],
-              imagePath: item['imagePath'] ?? 'uploads/1.png',
-              head: item['head'],
+              head: item['head Manager'],
               width: 60,
               height: 60,
             ),
@@ -84,133 +86,61 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to fetch teams: ${response.statusCode}')),
+        SnackBar(content: Text('Failed to load Teams: ${response.statusCode}')),
       );
     }
   }
 
-  void _editItem(Item item) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Team Info'),
-          content: TeamForm(
-            initialName: item.name,
-            initialImagePath: item.imagePath,
-            initialHead: item.head,
-            onSave: (name, imagePath, head) {
-              _updateTeam(item.id, name, imagePath, head);
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit cancelled')),
-                );
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _deleteItem(Item item) async {
-    final response = await http.delete(
-      Uri.parse('http://192.168.1.14:3000/api/deleteTeam'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, int>{
-        'id': item.id,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      setState(() {
-        items.remove(item);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deleted successfully')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to delete Team: ${response.statusCode}')),
-      );
-    }
-  }
-
-  void _addItem() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Team Info'),
-          content: TeamForm(
-            onSave: (name, imagePath, head) {
-              _addTeam(name, imagePath, head);
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Add cancelled')),
-                );
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+  // Add a new Team
   Future<void> _addTeam(String name, String imagePath, String head) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.1.14:3000/api/addTeam'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'name': name,
-        'imagePath': imagePath,
-        'head': head,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      final newTeam = jsonDecode(response.body);
-      setState(() {
-        items.add(
-          Item(
-            id: newTeam['id'],
-            name: newTeam['name'],
-            imagePath: newTeam['imagePath'],
-            head: newTeam['head'],
-            width: 60,
-            height: 60,
-          ),
-        );
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Added successfully')),
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.1.14:3000/api/addTeam'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'name': name,
+          'imagePath': imagePath,
+          'head': head,
+        }),
       );
-      Navigator.of(context).pop();
-    } else {
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final newTeam = jsonDecode(response.body);
+        setState(() {
+          items.add(
+            Item(
+              id: newTeam['id'],
+              imagePath: newTeam['imagePath'],
+              name: newTeam['name'],
+              head: newTeam['head manager'],
+              width: 60,
+              height: 60,
+            ),
+          );
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Added successfully')),
+        );
+        Navigator.of(context).pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add Team: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('Error occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add team: ${response.statusCode}')),
+        const SnackBar(content: Text('An error occurred while adding Team')),
       );
     }
   }
 
+  // Update an existing Team
   Future<void> _updateTeam(
       int id, String name, String imagePath, String head) async {
     final response = await http.put(
@@ -247,9 +177,91 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Failed to update team: ${response.statusCode}')),
+            content: Text('Failed to update Team: ${response.statusCode}')),
       );
     }
+  }
+
+  // Delete an Team
+  void _deleteItem(Item item) async {
+    final response = await http.delete(
+      Uri.parse('http://192.168.1.14:3000/api/deleteTeam'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, int>{'id': item.id}),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        items.remove(item);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Deleted successfully')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Failed to delete Team: ${response.statusCode}')),
+      );
+    }
+  }
+
+  void _editItem(Item item) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Team Info'),
+          content: TeamForm(
+            initialName: item.name,
+            initialHead: item.head,
+            initialImagePath: item.imagePath,
+            onSave: (name, imagePath, head) {
+              _updateTeam(item.id, name, imagePath, head);
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Edit cancelled')),
+                );
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addItem() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add Team Info'),
+          content: TeamForm(
+            onSave: (name, imagePath, head) {
+              _addTeam(name, imagePath, head);
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Add cancelled')),
+                );
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -309,35 +321,36 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: items.length,
               itemBuilder: (context, index) {
+                final item = items[index];
                 return ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Container(
-                      color: Colors.grey.shade200,
-                      width: items[index].width,
-                      height: items[index].height,
-                      child: Image.network(
-                        items[index].imagePath,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                  leading: CircleAvatar(
+                    backgroundImage: item.imagePath.startsWith('http') ||
+                            item.imagePath.startsWith('https')
+                        ? NetworkImage(item.imagePath) // For network images
+                        : File(item.imagePath).existsSync()
+                            ? FileImage(
+                                File(item.imagePath)) // For local images
+                            : AssetImage('assets/uploads/emp1.png')
+                                as ImageProvider, // Fallback if image not found
+                    radius: 30,
                   ),
-                  title: Text(items[index].name),
-                  subtitle: Text(items[index].head),
+                  title: Text(item.name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.head),
+                    ],
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          _editItem(items[index]);
-                        },
+                        onPressed: () => _editItem(item),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          _deleteItem(items[index]);
-                        },
+                        onPressed: () => _deleteItem(item),
                       ),
                     ],
                   ),
@@ -350,19 +363,20 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Employees',
+            icon: Icon(Icons.person),
+            label: 'Teams',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.group),
             label: 'Teams',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.business),
+            icon: Icon(Icons.location_city),
             label: 'Offices',
           ),
         ],
         currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
         onTap: _onItemTapped,
       ),
     );
@@ -370,18 +384,18 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
 }
 
 class TeamForm extends StatefulWidget {
-  const TeamForm({
-    super.key,
-    this.initialName,
-    this.initialImagePath,
-    this.initialHead,
-    required this.onSave,
-  });
-
   final String? initialName;
   final String? initialImagePath;
   final String? initialHead;
   final void Function(String name, String imagePath, String head) onSave;
+
+  const TeamForm({
+    Key? key,
+    this.initialName,
+    this.initialImagePath,
+    this.initialHead,
+    required this.onSave,
+  }) : super(key: key);
 
   @override
   State<TeamForm> createState() => _TeamFormState();
@@ -389,26 +403,25 @@ class TeamForm extends StatefulWidget {
 
 class _TeamFormState extends State<TeamForm> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _headController = TextEditingController();
-  final _imagePathController = TextEditingController();
+  late String _name;
+  late String _imagePath;
+  late String _head;
+
   final ImagePicker _picker = ImagePicker();
-  File? _imageFile;
 
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.initialName ?? '';
-    _headController.text = widget.initialHead ?? '';
-    _imagePathController.text = widget.initialImagePath ?? '';
+    _name = widget.initialName ?? '';
+    _imagePath = widget.initialImagePath ?? 'assets/uploads/default.png';
+    _head = widget.initialHead ?? '';
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
       setState(() {
-        _imageFile = File(pickedFile.path);
-        _imagePathController.text = pickedFile.path;
+        _imagePath = image.path;
       });
     }
   }
@@ -417,61 +430,73 @@ class _TeamFormState extends State<TeamForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: _pickImage,
-            child: CircleAvatar(
-              radius: 50,
-              backgroundImage: _imageFile == null
-                  ? (widget.initialImagePath != null
-                      ? NetworkImage(widget.initialImagePath!)
-                      : null)
-                  : FileImage(_imageFile!),
-              child: _imageFile == null
-                  ? const Icon(Icons.camera_alt, size: 40)
-                  : null,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: _pickImage,
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: _imagePath.isNotEmpty
+                    ? FileImage(File(_imagePath)) // Display picked image
+                    : null,
+                child: _imagePath
+                        .isEmpty // Show camera icon if no image is picked
+                    ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
+                    : null,
+                backgroundColor: _imagePath.isEmpty
+                    ? Colors.grey[300]
+                    : null, // Optional: background color for indication
+              ),
             ),
-          ),
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a name';
-              }
-              return null;
-            },
-          ),
-          TextFormField(
-            controller: _headController,
-            decoration: const InputDecoration(labelText: 'Head'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter head info';
-              }
-              return null;
-            },
-          ),
-          TextFormField(
-            controller: _imagePathController,
-            decoration: const InputDecoration(labelText: 'Image Path'),
-            enabled: false,
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                widget.onSave(
-                  _nameController.text,
-                  _imagePathController.text,
-                  _headController.text,
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
+            SizedBox(height: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextFormField(
+                initialValue: _name,
+                decoration: const InputDecoration(labelText: 'Team Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _name = value ?? '';
+                },
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextFormField(
+                initialValue: _name,
+                decoration: const InputDecoration(labelText: 'Head Manager'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a head manager';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _head = value ?? '';
+                },
+              ),
+            ),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    _formKey.currentState?.save();
+                    widget.onSave(_name, _imagePath, _head);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

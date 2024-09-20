@@ -385,7 +385,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.business),
+            icon: Icon(Icons.person),
             label: 'Employees',
           ),
           BottomNavigationBarItem(
