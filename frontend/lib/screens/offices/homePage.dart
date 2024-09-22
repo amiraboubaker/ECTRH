@@ -79,10 +79,10 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
           items.add(
             Item(
               id: item['id'],
+              imagePath: item['imagePath'],
               name: item['name'],
               manager: item['manager'],
               location: item['location'],
-              imagePath: item['imagePath'],
               fixNumber: item['fixNumber'],
               width: 60,
               height: 60,
@@ -125,10 +125,10 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
           items.add(
             Item(
               id: newOffice['id'],
+              imagePath: newOffice['imagePath'],
               name: newOffice['name'],
               manager: newOffice['manager'],
               location: newOffice['location'],
-              imagePath: newOffice['imagePath'],
               fixNumber: newOffice['fixNumber'],
               width: 60,
               height: 60,
@@ -351,16 +351,16 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
                             ? FileImage(
                                 File(item.imagePath)) // For local images
                             : AssetImage('assets/uploads/office1.png')
-                                as ImageProvider, // Fallback if image not found
+                                as ImageProvider,
                     radius: 30,
                   ),
-                  title: Text(item.name),
+                  title: Text(item.name), // Display office name
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.manager),
-                      Text(item.location),
-                      Text(item.fixNumber),
+                      Text(item.manager), // Display manager name
+                      Text(item.location), // Display location
+                      Text(item.fixNumber), // Display fix number
                     ],
                   ),
                   trailing: Row(
@@ -530,9 +530,15 @@ class _OfficeFormState extends State<OfficeForm> {
               child: TextFormField(
                 initialValue: _fixNumber,
                 decoration: const InputDecoration(labelText: 'Fix Number'),
+                keyboardType: TextInputType.number,
+                maxLength: 8,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter the Fix Number';
+                    return 'Please enter the Phone Number';
+                  } else if (value.length > 8) {
+                    return 'Phone number cannot exceed 8 digits';
+                  } else if (!RegExp(r'^\d+$').hasMatch(value)) {
+                    return 'Phone number must be numeric';
                   }
                   return null;
                 },
