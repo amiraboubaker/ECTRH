@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../home_screen.dart';
 import '../offices/homePage.dart' as Offices;
-import '../teams/homePage.dart' as Teams;
+import '../Employees/homePage.dart' as Employees;
 
 class Item {
   Item({
@@ -39,12 +39,12 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
   final List<Item> items = [];
 
   static const List<Widget> _widgetOptions = <Widget>[
+    Employees.EmployeesHomePage(),
     TeamsHomePage(),
-    Teams.TeamsHomePage(),
     Offices.OfficesHomePage(),
   ];
 
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   @override
   void initState() {
@@ -366,7 +366,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Teams',
+            label: 'Employees',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.group),

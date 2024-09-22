@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/teams/homePage.dart';
+import 'package:flutter_application_1/screens/home_screen.dart';
 
 // import 'screens/auth/signup_screen.dart';
 
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const TeamsHomePage(),
+      home: const HomeScreen(),
     );
   }
 }
