@@ -21,6 +21,7 @@ class Item {
 
   final int id;
   final String imagePath;
+
   final String name;
   final String head;
   final double width;
@@ -109,15 +110,15 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         final newTeam = jsonDecode(response.body);
         setState(() {
           items.add(
             Item(
-              id: newTeam['id'],
-              imagePath: newTeam['imagePath'],
-              name: newTeam['name'],
-              head: newTeam['head manager'],
+              id: newTeam['teamId'], // Adjust based on your response
+              imagePath: imagePath,
+              name: name,
+              head: head,
               width: 60,
               height: 60,
             ),
@@ -126,6 +127,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Added successfully')),
         );
+        _fetchTeams(); // Fetch updated list
         Navigator.of(context).pop();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -162,8 +164,8 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
         items.add(
           Item(
             id: id,
-            imagePath: imagePath,
             name: name,
+            imagePath: imagePath,
             head: head,
             width: 60,
             height: 60,
@@ -215,8 +217,8 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
           title: const Text('Edit Team Info'),
           content: TeamForm(
             initialName: item.name,
-            initialHead: item.head,
             initialImagePath: item.imagePath,
+            initialHead: item.head,
             onSave: (name, imagePath, head) {
               _updateTeam(item.id, name, imagePath, head);
             },

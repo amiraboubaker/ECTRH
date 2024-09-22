@@ -1,4 +1,4 @@
-const team = require('../models/team');
+const Team = require('../models/team');
 const teamDao = require('../dao/teamDao');
 
 // Controller to get all teams
@@ -6,69 +6,71 @@ const getAllTeams = (req, res) => {
     teamDao.getAllTeams((err, teams) => {
         if (err) {
             console.error('Error fetching teams:', err);
-            res.status(500).json({ error: 'Error fetching teams' });
-        } else {
-            res.status(200).json(teams);
+            return res.status(500).json({ error: 'Error fetching teams' });
         }
+        res.status(200).json(teams);
     });
 };
 
 // Controller to add a new team
-
 const addTeam = async (req, res) => {
     try {
         console.log('Received request to add team:', req.body);
-        const { name, head } = req.body;  // Don't get imagePath here
+        const { name, head } = req.body;
 
-        // File path (use uploaded image or fallback to default)
+        // Use the uploaded file path if multer has processed the file
         const imagePath = req.file ? req.file.path : 'uploads/default.png';
 
         // Create new team instance
-        const newteam = new team(null, name,head);
+        const newTeam = new Team(null, name, imagePath, head);
 
         // Insert team into the database
-        const result = await teamDao.addTeam(newteam);  // Using teamDao to add
+        const result = await teamDao.addTeam(newTeam);
 
-        console.log('team added:', result);
-        res.status(200).json(result);
+        console.log('Team added:', result);
+        res.status(201).json({ message: 'Team added successfully', teamId: result.insertId });
     } catch (error) {
         console.error('Error adding team:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
-// Controller to update an team
-const updateTeam = (req, res) => {
-    const { id, name, imagePath, head } = req.body;
-    const updatedteam = new team(id, name, imagePath, head);
+// Controller to update a team
+const updateTeam = async (req, res) => {
+    try {
+        const { id, name, head } = req.body;
 
-    teamDao.updateTeam(updatedteam, (err, result) => {
-        if (err) {
-            console.error('Error updating team:', err);
-            res.status(500).json({ error: 'Error updating team' });
-        } else {
-            res.status(200).json({ message: 'team updated successfully' });
-        }
-    });
+        // Use the uploaded file path if multer has processed the file
+        const imagePath = req.file ? req.file.path : undefined; // Optional for image update
+        const updatedTeam = new Team(id, name, imagePath, head);
+
+        const result = await teamDao.updateTeam(updatedTeam);
+        res.status(200).json({ message: 'Team updated successfully', result });
+    } catch (error) {
+        console.error('Error updating team:', error);
+        res.status(500).json({ error: 'Error updating team' });
+    }
 };
 
-// Controller to delete an team
-const deleteTeam = (req, res) => {
-    const { id } = req.body;
+// Controller to delete a team
+const deleteTeam = async (req, res) => {
+    try {
+        const { id } = req.body;
 
-    teamDao.deleteTeam(id, (err, result) => {
-        if (err) {
-            console.error('Error deleting team:', err);
-            res.status(500).json({ error: 'Error deleting team' });
-        } else {
-            res.status(200).json({ message: 'team deleted successfully' });
+        const result = await teamDao.deleteTeam(id);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Team not found' });
         }
-    });
+        res.status(200).json({ message: 'Team deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting team:', error);
+        res.status(500).json({ error: 'Error deleting team' });
+    }
 };
 
 module.exports = {
     getAllTeams,
     addTeam,
     updateTeam,
-    deleteTeam
+    deleteTeam,
 };

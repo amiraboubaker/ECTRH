@@ -29,14 +29,14 @@ db.connect((err) => {
 });
 
 // Middleware to use the database connection in the request
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   req.db = db;
   next();
 });
 
 // Multer setup for file uploads from local drive
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     cb(null, 'uploads/');  // The directory where the files will be stored
   },
   filename: (req, file, cb) => {

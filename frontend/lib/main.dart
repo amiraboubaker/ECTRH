@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/screens/teams/homePage.dart';
 
-import 'screens/auth/signup_screen.dart';
+// import 'screens/auth/signup_screen.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const SignUpScreen(),
+      home: const TeamsHomePage(),
     );
   }
 }
