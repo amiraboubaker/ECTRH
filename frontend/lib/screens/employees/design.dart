@@ -115,7 +115,7 @@ class _DesignHomePageState extends State<DesignHomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Image.asset(
-                "assets/images/Design.jpg",
+                "assets/uploads/Design.jpg",
                 height: 400,
               ), // Assurez-vous d'avoir un logo dans votre dossier assets
             ),

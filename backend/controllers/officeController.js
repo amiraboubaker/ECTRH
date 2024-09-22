@@ -2,7 +2,7 @@ const officeDao = require('../dao/officeDao');
 const Office = require('../models/office');
 
 // Controller to get all offices
-const getAllOffices = (req, res) => {
+const getAllOffices = (_req, res) => {
     officeDao.getAllOffices((err, offices) => {  // Correct function call
         if (err) {
             console.error('Error fetching offices:', err);
@@ -42,7 +42,7 @@ const updateOffice = (req, res) => {
     const { id, name, manager, location, imagePath, fixNumber } = req.body;
     const updatedOffice = new Office(id, name, manager, location, imagePath, fixNumber);
 
-    officeDao.updateOffice(updatedOffice, (err, result) => {
+    officeDao.updateOffice(updatedOffice, (err, _result) => {
         if (err) {
             console.error('Error updating office:', err);
             res.status(500).json({ error: 'Error updating office' });
@@ -56,7 +56,7 @@ const updateOffice = (req, res) => {
 const deleteOffice = (req, res) => {
     const { id } = req.body;
 
-    officeDao.deleteOffice(id, (err, result) => {
+    officeDao.deleteOffice(id, (err, _result) => {
         if (err) {
             console.error('Error deleting office:', err);
             res.status(500).json({ error: 'Error deleting office' });

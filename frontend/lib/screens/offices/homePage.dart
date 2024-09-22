@@ -21,14 +21,14 @@ class Item {
     this.height = 90.0,
   });
 
+  final String fixNumber;
+  final double height;
   final int id;
   final String imagePath;
-  final String name;
-  final String manager;
   final String location;
-  final String fixNumber;
+  final String manager;
+  final String name;
   final double width;
-  final double height;
 }
 
 class OfficesHomePage extends StatefulWidget {
@@ -99,8 +99,8 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
   }
 
   // Add a new office
-  Future<void> _addOffice(String name, String manager, String location,
-      String imagePath, String fixNumber) async {
+  Future<void> _addOffice(String imagePath, String name, String manager,
+      String location, String fixNumber) async {
     try {
       final response = await http.post(
         Uri.parse('http://192.168.1.14:3000/api/addOffice'),
@@ -108,10 +108,10 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, dynamic>{
+          'imagePath': imagePath,
           'name': name,
           'manager': manager,
           'location': location,
-          'imagePath': imagePath,
           'fixNumber': fixNumber,
         }),
       );
@@ -154,8 +154,8 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
   }
 
   // Update an existing office
-  Future<void> _updateOffice(int id, String name, String manager,
-      String location, String fixNumber, String imagePath) async {
+  Future<void> _updateOffice(int id, String imagePath, String name,
+      String manager, String location, String fixNumber) async {
     final response = await http.put(
       Uri.parse('http://192.168.1.14:3000/api/updateOffice'),
       headers: <String, String>{
@@ -163,10 +163,10 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
       },
       body: jsonEncode(<String, dynamic>{
         'id': id,
+        'imagePath': imagePath,
         'name': name,
         'manager': manager,
         'location': location,
-        'imagePath': imagePath,
         'fixNumber': fixNumber,
       }),
     );
@@ -231,11 +231,11 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
         return AlertDialog(
           title: const Text('Edit Office Info'),
           content: OfficeForm(
+            initialImagePath: item.imagePath,
             initialName: item.name,
             initialManager: item.manager,
             initialLocation: item.location,
             initialFixNumber: item.fixNumber,
-            initialImagePath: item.imagePath,
             onSave: (name, manager, location, fixNumber, imagePath) {
               _updateOffice(
                   item.id, name, manager, location, fixNumber, imagePath);
@@ -264,8 +264,8 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
         return AlertDialog(
           title: const Text('Add Office Info'),
           content: OfficeForm(
-            onSave: (name, manager, location, fixNumber, imagePath) {
-              _addOffice(name, manager, location, fixNumber, imagePath);
+            onSave: (imagePath, name, manager, location, fixNumber) {
+              _addOffice(imagePath, name, manager, location, fixNumber);
             },
           ),
           actions: [
@@ -350,17 +350,17 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
                         : File(item.imagePath).existsSync()
                             ? FileImage(
                                 File(item.imagePath)) // For local images
-                            : AssetImage('assets/uploads/office1.png')
-                                as ImageProvider,
+                            : AssetImage('assets/uploads/emp1.png')
+                                as ImageProvider, // Fallback if image not found
                     radius: 30,
                   ),
-                  title: Text(item.name), // Display office name
+                  title: Text(item.name),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.manager), // Display manager name
-                      Text(item.location), // Display location
-                      Text(item.fixNumber), // Display fix number
+                      Text(item.manager),
+                      Text(item.location),
+                      Text(item.fixNumber),
                     ],
                   ),
                   trailing: Row(
@@ -398,7 +398,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: const Color.fromARGB(255, 27, 20, 235),
         onTap: _onItemTapped,
       ),
     );
@@ -406,53 +406,65 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
 }
 
 class OfficeForm extends StatefulWidget {
-  final String? initialName;
-  final String? initialManager;
-  final String? initialLocation;
-  final String? initialFixNumber;
-  final String? initialImagePath;
-  final void Function(String name, String manager, String location,
-      String fixNumber, String imagePath) onSave;
-
   const OfficeForm({
     Key? key,
+    this.initialImagePath,
     this.initialName,
     this.initialManager,
     this.initialLocation,
     this.initialFixNumber,
-    this.initialImagePath,
     required this.onSave,
   }) : super(key: key);
+
+  final void Function(String imagePath, String name, String manager,
+      String location, String fixNumber) onSave;
+
+  final String? initialFixNumber;
+  final String? initialImagePath;
+  final String? initialLocation;
+  final String? initialManager;
+  final String? initialName;
 
   @override
   State<OfficeForm> createState() => _OfficeFormState();
 }
 
 class _OfficeFormState extends State<OfficeForm> {
+  late TextEditingController _fixNumberController;
   final _formKey = GlobalKey<FormState>();
-  late String _name;
-  late String _manager;
-  late String _location;
-  late String _fixNumber;
   late String _imagePath;
-
+  late TextEditingController _locationController;
+  late TextEditingController _managerController;
+  late TextEditingController _nameController;
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _managerController.dispose();
+    _locationController.dispose();
+    _fixNumberController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
-    _name = widget.initialName ?? '';
-    _manager = widget.initialManager ?? '';
-    _location = widget.initialLocation ?? '';
-    _fixNumber = widget.initialFixNumber ?? '';
-    _imagePath = widget.initialImagePath ?? 'assets/uploads/default.png';
+    _nameController = TextEditingController(text: widget.initialName ?? '');
+    _managerController =
+        TextEditingController(text: widget.initialManager ?? '');
+    _locationController =
+        TextEditingController(text: widget.initialLocation ?? '');
+    _fixNumberController =
+        TextEditingController(text: widget.initialFixNumber ?? '');
+    _imagePath = widget.initialImagePath ?? 'uploads/default.png';
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
       setState(() {
-        _imagePath = image.path;
+        _imagePath = pickedFile.path;
       });
     }
   }
@@ -468,67 +480,58 @@ class _OfficeFormState extends State<OfficeForm> {
             GestureDetector(
               onTap: _pickImage,
               child: CircleAvatar(
-                radius: 50,
-                backgroundImage:
-                    _imagePath.isNotEmpty ? FileImage(File(_imagePath)) : null,
-                child: _imagePath.isEmpty
-                    ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
-                    : null,
+                radius: 40,
+                backgroundImage: _imagePath != null
+                    ? FileImage(File(_imagePath))
+                    : const AssetImage('assets/default_avatar.png')
+                        as ImageProvider,
+                child: const Icon(Icons.camera_alt),
               ),
             ),
             SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextFormField(
-                initialValue: _name,
+                controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Office Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
+                    return 'Please enter the office name';
                   }
                   return null;
-                },
-                onSaved: (value) {
-                  _name = value ?? '';
                 },
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextFormField(
-                initialValue: _manager,
+                controller: _managerController,
                 decoration: const InputDecoration(labelText: 'Manager'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter the Manager';
+                    return 'Please enter the manager\'s name';
                   }
                   return null;
-                },
-                onSaved: (value) {
-                  _manager = value ?? '';
                 },
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextFormField(
-                initialValue: _location,
-                decoration: const InputDecoration(labelText: 'location'),
+                controller: _locationController,
+                decoration: const InputDecoration(labelText: 'Location'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the location';
                   }
                   return null;
                 },
-                onSaved: (value) {
-                  _location = value ?? '';
-                },
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextFormField(
-                initialValue: _fixNumber,
+                controller: _fixNumberController,
                 decoration: const InputDecoration(labelText: 'Fix Number'),
                 keyboardType: TextInputType.number,
                 maxLength: 8,
@@ -542,9 +545,6 @@ class _OfficeFormState extends State<OfficeForm> {
                   }
                   return null;
                 },
-                onSaved: (value) {
-                  _fixNumber = value ?? '';
-                },
               ),
             ),
             SizedBox(height: 16.0),
@@ -554,7 +554,12 @@ class _OfficeFormState extends State<OfficeForm> {
                   if (_formKey.currentState?.validate() ?? false) {
                     _formKey.currentState?.save();
                     widget.onSave(
-                        _name, _manager, _location, _fixNumber, _imagePath);
+                      _imagePath,
+                      _nameController.text,
+                      _managerController.text,
+                      _locationController.text,
+                      _fixNumberController.text,
+                    );
                   }
                 },
                 child: const Text('Save'),

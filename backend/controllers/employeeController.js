@@ -2,7 +2,7 @@ const Employee = require('../models/employee');
 const employeeDao = require('../dao/employeeDao');
 
 // Controller to get all employees
-const getAllEmployees = (req, res) => {
+const getAllEmployees = (_req, res) => {
     employeeDao.getAllEmployees((err, employees) => {
         if (err) {
             console.error('Error fetching employees:', err);
@@ -42,7 +42,7 @@ const updateEmployee = (req, res) => {
     const { id, name, email, position, phoneNumber, imagePath } = req.body;
     const updatedEmployee = new Employee(id, name, email, position, imagePath, phoneNumber);
 
-    employeeDao.updateEmployee(updatedEmployee, (err, result) => {
+    employeeDao.updateEmployee(updatedEmployee, (err, _result) => {
         if (err) {
             console.error('Error updating employee:', err);
             res.status(500).json({ error: 'Error updating employee' });
@@ -56,7 +56,7 @@ const updateEmployee = (req, res) => {
 const deleteEmployee = (req, res) => {
     const { id } = req.body;
 
-    employeeDao.deleteEmployee(id, (err, result) => {
+    employeeDao.deleteEmployee(id, (err, _result) => {
         if (err) {
             console.error('Error deleting employee:', err);
             res.status(500).json({ error: 'Error deleting employee' });

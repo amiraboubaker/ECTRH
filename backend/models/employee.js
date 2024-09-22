@@ -4,8 +4,8 @@ class Employee {
         this.name = name;
         this.email = email;
         this.position = position;
-        this.imagePath = imagePath || 'uploads/emp1.png';  // Optional default if not provided
         this.phoneNumber = phoneNumber;
+        this.imagePath = imagePath || 'uploads/default.png';
     }
 }
 

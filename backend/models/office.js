@@ -4,7 +4,7 @@ class Office {
         this.name = name;
         this.manager = manager;
         this.location = location;
-        this.imagePath = imagePath || 'uploads/office1.png';
+        this.imagePath = imagePath || 'uploads/default.png';
         this.fixNumber = fixNumber;
     }
 }

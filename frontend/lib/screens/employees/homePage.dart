@@ -399,7 +399,7 @@ class _EmployeesHomePageState extends State<EmployeesHomePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: const Color.fromARGB(255, 27, 20, 235),
         onTap: _onItemTapped,
       ),
     );
@@ -470,16 +470,11 @@ class _EmployeeFormState extends State<EmployeeForm> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: _imagePath.isNotEmpty
-                    ? FileImage(File(_imagePath)) // Display picked image
-                    : null,
-                child: _imagePath
-                        .isEmpty // Show camera icon if no image is picked
-                    ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
-                    : null,
-                backgroundColor: _imagePath.isEmpty
-                    ? Colors.grey[300]
-                    : null, // Optional: background color for indication
+                backgroundImage: _imagePath != null
+                    ? FileImage(File(_imagePath))
+                    : const AssetImage('assets/default_avatar.png')
+                        as ImageProvider,
+                child: const Icon(Icons.camera_alt),
               ),
             ),
             SizedBox(height: 16.0),

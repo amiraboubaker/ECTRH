@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import '../Employees/homePage.dart' as Employees;
 import '../home_screen.dart';
 import '../offices/homePage.dart' as Offices;
-import '../Employees/homePage.dart' as Employees;
 
 class Item {
   Item({
@@ -378,7 +378,7 @@ class _TeamsHomePageState extends State<TeamsHomePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: const Color.fromARGB(255, 27, 20, 235),
         onTap: _onItemTapped,
       ),
     );
@@ -440,16 +440,11 @@ class _TeamFormState extends State<TeamForm> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: _imagePath.isNotEmpty
-                    ? FileImage(File(_imagePath)) // Display picked image
-                    : null,
-                child: _imagePath
-                        .isEmpty // Show camera icon if no image is picked
-                    ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
-                    : null,
-                backgroundColor: _imagePath.isEmpty
-                    ? Colors.grey[300]
-                    : null, // Optional: background color for indication
+                backgroundImage: _imagePath != null
+                    ? FileImage(File(_imagePath))
+                    : const AssetImage('assets/default_avatar.png')
+                        as ImageProvider,
+                child: const Icon(Icons.camera_alt),
               ),
             ),
             SizedBox(height: 16.0),

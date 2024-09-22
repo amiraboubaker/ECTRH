@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'auth/signin_screen.dart';
 import 'employees/homePage.dart';
 import 'offices/homePage.dart';
-import 'auth/signin_screen.dart';
 import 'teams/homePage.dart';
 
 void main() {
@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 120,
               child: DrawerHeader(
                 decoration: BoxDecoration(
-                  color: Color(0xFF00c588b),
+                  color: const Color.fromARGB(255, 132, 71, 11),
                 ),
                 child: Text(
                   'Menu',
