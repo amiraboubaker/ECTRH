@@ -350,7 +350,7 @@ class _OfficesHomePageState extends State<OfficesHomePage> {
                         : File(item.imagePath).existsSync()
                             ? FileImage(
                                 File(item.imagePath)) // For local images
-                            : AssetImage('assets/uploads/emp1.png')
+                            : AssetImage('assets/uploads/office1.png')
                                 as ImageProvider, // Fallback if image not found
                     radius: 30,
                   ),
