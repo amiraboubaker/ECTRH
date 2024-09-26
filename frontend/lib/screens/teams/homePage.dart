@@ -468,7 +468,7 @@ class _TeamFormState extends State<TeamForm> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextFormField(
-                initialValue: _name,
+                initialValue: _head,
                 decoration: const InputDecoration(labelText: 'Head Manager'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {

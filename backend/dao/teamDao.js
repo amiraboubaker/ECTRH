@@ -16,6 +16,7 @@ const getAllTeams = () => {
 };
 
 // Function to add a new team
+
 const addTeam = (team) => {
     return new Promise((resolve, reject) => {
         const sql = "INSERT INTO team (name, imagePath, head) VALUES (?, ?, ?)";
