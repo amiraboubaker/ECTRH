@@ -22,6 +22,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
+  String? _validateUsername(String? username) {
+    if (username == null || username.isEmpty) {
+      return 'Username is required';
+    }
+    if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(username)) {
+      return 'Username must be alphanumeric';
+    }
+    return null;
+  }
+
   String? _validateEmail(String? email) {
     if (email == null || email.isEmpty) {
       return 'Email is required';
@@ -135,6 +145,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         icon: Icons.person_outline,
                         isPasswordType: false,
                         controller: _userNameTextController,
+                        validator: _validateUsername, // Add the validator here
                       ),
                       const SizedBox(height: 20),
                       reusableTextField(
