@@ -16,7 +16,7 @@ const db = mysql.createConnection({
   host: 'localhost',  // Ensure this is correct for your MySQL setup
   user: 'root',       // Replace with your MySQL username
   password: '',       // Replace with your MySQL password
-  database: 'ectrh'   // Replace with your database name
+  database: 'dbect'   // Replace with your database name
 });
 
 // Connect to MySQL
@@ -73,14 +73,14 @@ app.post('/api/addEmployee', upload.single('image'), (req, res) => {
       email,
       position,
       phoneNumber,
-      imagePath: req.file ? req.file.path : 'uploads/default.png'
+      imagePath
     });
   });
 });
 
 // Route to upload an office image and save office info
 app.post('/api/addOffice', upload.single('image'), (req, res) => {
-  const { name, manager, location, fixNumber } = req.body; // Destructure without imagePath
+  const { name, manager, location, fixNumber } = req.body; 
   
   // File path (or default if no file is uploaded)
   const imagePath = req.file ? req.file.path : 'uploads/default.png';
@@ -101,15 +101,18 @@ app.post('/api/addOffice', upload.single('image'), (req, res) => {
   });
 });
 
-
 // Routes setup
-app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api', employeeRoutes);
 app.use('/api', officeRoutes);
 app.use('/api', teamRoutes);
 
+module.exports = app;
+
 // Set PORT and start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://192.168.1.14:${PORT}`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://192.168.1.14:${PORT}`);
+  });
+}
