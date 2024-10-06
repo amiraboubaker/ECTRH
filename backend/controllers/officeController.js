@@ -1,74 +1,79 @@
 const officeDao = require('../dao/officeDao');
-const Office = require('../models/office');
 
 // Controller to get all offices
-const getAllOffices = (_req, res) => {
-    officeDao.getAllOffices((err, offices) => {  // Correct function call
+const getAllOffices = (req, res) => {
+    officeDao.getAllOffices((err, offices) => {
         if (err) {
             console.error('Error fetching offices:', err);
-            res.status(500).json({ error: 'Error fetching offices' });
-        } else {
-            res.status(200).json(offices);
+            return res.status(500).json({ error: 'Error fetching offices' });
         }
+        res.status(200).json(offices);
     });
 };
 
-// Controller to add a new office
-
-const addOffice = async (req, res) => {
-    try {
-        console.log('Received request to add office:', req.body);
-        const { name, manager, location, fixNumber } = req.body;
-
-        // File path (use uploaded image or fallback to default)
-        const imagePath = req.file ? req.file.path : 'uploads/default.png';
-
-        // Create new office instance
-        const newOffice = new Office(null, name, manager, location, imagePath, fixNumber);
-
-        // Insert office into the database
-        const result = await officeDao.addOffice(newOffice);
-        
-        console.log('Office added:', result);
-        res.status(201).json(result); // Use 201 status for creation
-    } catch (error) {
-        console.error('Error adding office:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+// Controller to add an office
+const addOffice = (req, res) => {
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).json({ error: 'Office name is required' });
     }
-};
 
-// Controller to update an office
-const updateOffice = (req, res) => {
-    const { id, name, manager, location, imagePath, fixNumber } = req.body;
-    const updatedOffice = new Office(id, name, manager, location, imagePath, fixNumber);
-
-    officeDao.updateOffice(updatedOffice, (err, _result) => {
+    officeDao.addOffice({ name }, (err, result) => {
         if (err) {
-            console.error('Error updating office:', err);
-            res.status(500).json({ error: 'Error updating office' });
-        } else {
-            res.status(200).json({ message: 'Office updated successfully' });
+            console.error('Error adding office:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
         }
+        res.status(201).json(result);
     });
 };
 
 // Controller to delete an office
 const deleteOffice = (req, res) => {
     const { id } = req.body;
+    if (!id) {
+        return res.status(400).json({ error: 'Office ID is required' });
+    }
 
-    officeDao.deleteOffice(id, (err, _result) => {
+    officeDao.deleteOffice(id, (err, result) => {
         if (err) {
             console.error('Error deleting office:', err);
-            res.status(500).json({ error: 'Error deleting office' });
-        } else {
-            res.status(200).json({ message: 'Office deleted successfully' });
+            return res.status(500).json({ error: 'Internal Server Error' });
         }
+        res.status(204).send(); // No content for successful deletion
+    });
+};
+
+// Controller to update an office
+const updateOffice = (req, res) => {
+    const { id, name, location } = req.body;
+    
+    if (!id) {
+        return res.status(400).json({ error: 'Office ID is required' });
+    }
+
+    if (!name && !location) {
+        return res.status(400).json({ error: 'At least one field (name or location) is required for update' });
+    }
+
+    const updatedOffice = { name, location };
+
+    officeDao.updateOffice(id, updatedOffice, (err, result) => {
+        if (err) {
+            console.error('Error updating office:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Office not found' });
+        }
+
+        res.status(200).json({ message: 'Office updated successfully' });
     });
 };
 
 module.exports = {
     getAllOffices,
     addOffice,
+    deleteOffice,
     updateOffice,
-    deleteOffice
 };
