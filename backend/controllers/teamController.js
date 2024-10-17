@@ -1,8 +1,10 @@
+const express = require('express');
+const router = express.Router();
 const Team = require('../models/team');
 const teamDao = require('../dao/teamDao');
 
 // Controller to get all teams
-const getAllTeams = (req, res) => {
+router.get('/', (req, res) => {
     teamDao.getAllTeams((err, teams) => {
         if (err) {
             console.error('Error fetching teams:', err);
@@ -10,10 +12,10 @@ const getAllTeams = (req, res) => {
         }
         res.status(200).json(teams);
     });
-};
+});
 
 // Controller to add a new team
-const addTeam = async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         console.log('Received request to add team:', req.body);
         const { name, head } = req.body;
@@ -33,10 +35,10 @@ const addTeam = async (req, res) => {
         console.error('Error adding team:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-};
+});
 
 // Controller to update a team
-const updateTeam = async (req, res) => {
+router.put('/', async (req, res) => {
     try {
         const { id, name, head } = req.body;
 
@@ -50,10 +52,10 @@ const updateTeam = async (req, res) => {
         console.error('Error updating team:', error);
         res.status(500).json({ error: 'Error updating team' });
     }
-};
+});
 
 // Controller to delete a team
-const deleteTeam = async (req, res) => {
+router.delete('/', async (req, res) => {
     try {
         const { id } = req.body;
 
@@ -66,11 +68,6 @@ const deleteTeam = async (req, res) => {
         console.error('Error deleting team:', error);
         res.status(500).json({ error: 'Error deleting team' });
     }
-};
+});
 
-module.exports = {
-    getAllTeams,
-    addTeam,
-    updateTeam,
-    deleteTeam,
-};
+module.exports = router; // Exportez le routeur
